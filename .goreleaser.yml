@@ -1,0 +1,44 @@
+env:
+  - GO111MODULE=on
+  - VERSION=v0.1.0
+before:
+  hooks:
+    - go mod tidy
+builds:
+  -
+    binary: testrelease
+    env:
+      - CGO_ENABLED=0
+      - PKG='github.com/eric-fleming/testrelease'
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+    flags:
+      - -a
+    ldflags:
+      - -w -X "{{ .Env.PKG }}/version.GITCOMMIT={{ .ShortCommit }}" -X "{{ .Env.PKG }}/version.VERSION={{ .Env.VERSION }} -extldflags -static"
+checksum:
+  name_template: 'checksums.txt'
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+    - Merge pull request
+    - Merge branch
+archives:
+- name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}'
+  wrap_in_directory: true
+  format: tar.gz
+  replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    amd64: x86_64
+  format_overrides:
+  - goos: windows
+    format: zip
